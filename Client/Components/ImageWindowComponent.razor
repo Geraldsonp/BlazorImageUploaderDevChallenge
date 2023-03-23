@@ -1,0 +1,29 @@
+@inject IJSRuntime _js
+@inject IToastService _ToastService
+
+@if (ImageSrc is not null)
+{
+    <div class="flex justify-center flex-col items-center">
+        <p class="material-symbols-rounded text-green-700 text-6xl mb-2">check_circle</p>
+        <p class="text-gray-700 text-2xl mb-2 font-medium">Uploaded Successfully!</p>
+        <img src="@ImageSrc" class="h-80 m-2 rounded-lg"/>
+        <div class="mt-3 w-[90%] border rounded-lg py-1 px-3 inline-flex content-center gap-1">
+                <p class="text-sm py-2.5 text-ellipsis whitespace-nowrap overflow-hidden">@ImageSrc</p>
+            <button class="primary-btn grow whitespace-nowrap" @onclick="HandleCopy">Copy Link</button>
+        </div>
+    </div>
+    
+}
+
+@code {
+
+    [Parameter]
+    public string ImageSrc { get; set; }
+
+    async Task HandleCopy(){
+        _ToastService.ShowSuccess("Text Copied");
+        await _js.InvokeVoidAsync("clipboardCopy.copyText", ImageSrc);
+        Console.Write("Test");
+    }
+
+}
