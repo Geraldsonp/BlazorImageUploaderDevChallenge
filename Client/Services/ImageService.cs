@@ -7,7 +7,8 @@ namespace ImageUploader.Client.Services;
 
 public class ImageService : IImageService
 {
-    private string ApiAddress { get; set; } = "/api/Upload";
+    private string ApiAddress { get; set; } = "/api/upload";
+    
     private readonly HttpClient _httpClient;
 
     public ImageService(HttpClient httpClient)
@@ -26,11 +27,11 @@ public class ImageService : IImageService
 
         if (response.IsSuccessStatusCode)
         {
-            result.ImgUrl = await response.Content.ReadAsStringAsync();
+            result.ImgUrl = (await response.Content.ReadFromJsonAsync<string>()).Trim('"');
         }
         else
         {
-            result.Error = await response.Content.ReadAsStringAsync();
+            result.Error = (await response.Content.ReadFromJsonAsync<string>()).Trim('"');
         }
 
         return result;
@@ -48,7 +49,7 @@ public class ImageService : IImageService
 
         if (response.IsSuccessStatusCode)
         {
-            result.ImgUrl = await response.Content.ReadAsStringAsync();
+            result.ImgUrl = await response.Content.ReadFromJsonAsync<string>();
         }
         else
         {

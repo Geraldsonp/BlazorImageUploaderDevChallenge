@@ -39,7 +39,7 @@ namespace ApiIsolated
 
             using var ms = new MemoryStream(imageUploadRequest.ImageBytes);
 
-            if (!blobClient.Exists())
+            if (!await blobClient.ExistsAsync())
             {
                 await blobClient.UploadAsync(ms);
                 log.LogInformation($"Uploaded Blob {imageUploadRequest.ImgName}");
