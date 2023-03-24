@@ -1,9 +1,134 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+@using ImageUploader.Client.Services
+@using ImageUploader.Shared.Models.Commands.Images
+@inject IJSRuntime JSRuntime
+@inject IImageService _ImageService
 
-<h1>Hello, world!</h1>
+<div class="main-container">
+    <div class="container">
+        <div class="card">
+            @if (_imageLink is not null)
+            {
+                <ImageWindowComponent ImageSrc="@_imageLink"></ImageWindowComponent>
+            }
+            else if (_isUploading)
+            {
+                <UploadingComponent></UploadingComponent>
+            }
+            else
+            {
+                <div class="mb-8">
+                    <h1 class="card-title">Upload your image</h1>
+                    <p class="text-center text-gray-700 text-sm">File should be Jpge or Png</p>
+                </div>
+                <div class="drop-Zone-container">
+                    <div class="drop-zone @_dragCssStyle" @ref="DropZoneInstance">
+                        <InputFile @ref="_inputFileReference" id="FileImput" class="fileInputstyle" OnChange="OnChange" @ondragenter="OndragEnter" @ondragleave="OnDragLeave"></InputFile>
+                        <div class="drop-zone-placeholder ">
+                            <img class="mb-8" src="image.svg" alt="Upload Image">
+                            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Drag & Drop your image here</p>
+                        </div>
+                    </div>
+                    <p class="my-5 text-gray-400">Or</p>
+                    <label class="upload-btn" for="FileImput">Choose a file</label>
+                </div>
+            }
+        </div>
+        @if (Error is not null)
+        {
+            <span class="text-red-600 text-xl">@Error</span>
+        }
+    </div>
+</div>
 
-Welcome to your new app.
+@code {
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    private string _dragCssStyle = "";
+
+    private string? _imageLink;
+
+    private bool _isUploading = false;
+
+    private string? Error { get; set; }
+
+    private ElementReference DropZoneInstance { get; set; }
+
+    private InputFile? _inputFileReference;
+
+    IJSObjectReference? _dropZoneInstance;
+
+    IJSObjectReference? _dragAndDropModuleReference;
+
+
+    private void OndragEnter()
+    {
+        _dragCssStyle = "hover";
+    }
+
+    private void OnDragLeave()
+    {
+        _dragCssStyle = "";
+    }
+
+    async Task OnChange(InputFileChangeEventArgs e)
+    {
+        _dragCssStyle = "";
+        _imageLink = null;
+        _isUploading = true;
+
+        await Upload(e.File);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+    // Load the JS file
+            _dragAndDropModuleReference = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Js/dropZone.js");
+
+    // Initialize the drop zone
+            _dropZoneInstance = await _dragAndDropModuleReference.InvokeAsync<IJSObjectReference>("InitializeFileDropZone", DropZoneInstance, _inputFileReference.Element);
+        }
+    }
+
+    private async Task Upload(IBrowserFile file)
+    {
+        var fileStream = new StreamContent(file.OpenReadStream(98873600));
+        var fileBytes = await fileStream.ReadAsByteArrayAsync();
+        var request = new ImageUploadRequest()
+        {
+            ImageBytes = fileBytes,
+            ImgName = file.Name
+        };
+
+        var result = await _ImageService.UploadToBlobAsync(request);
+
+        _isUploading = false;
+
+        if (result.IsSucess)
+        {
+            _imageLink = result.ImgUrl;
+        }
+        else
+        {
+            Error = result.Error;
+        }
+    }
+
+    // Unregister the drop zone events
+    public async ValueTask DisposeAsync()
+    {
+        if (_dropZoneInstance != null)
+        {
+            await _dropZoneInstance.InvokeVoidAsync("dispose");
+            await _dropZoneInstance.DisposeAsync();
+        }
+
+        if (_dragAndDropModuleReference != null)
+        {
+            await _dragAndDropModuleReference.DisposeAsync();
+        }
+    }
+
+}
