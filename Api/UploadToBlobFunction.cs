@@ -27,7 +27,7 @@ namespace ApiIsolated
             var log = executionContext.GetLogger("Upload");
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            var connection = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+            var connection = Environment.GetEnvironmentVariable("AzureBlobStorage");
             var containerName = Environment.GetEnvironmentVariable("ContainerName");
 
             var blobContainer = new BlobContainerClient(connection, containerName);
