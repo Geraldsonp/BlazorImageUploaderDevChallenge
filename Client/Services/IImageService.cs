@@ -6,6 +6,5 @@ namespace ImageUploader.Client.Services;
 
 public interface IImageService
 {
-    Task<UploadResult> UploadAsync(ImageUploadRequest request);
     Task<UploadResult> UploadToBlobAsync(ImageUploadRequest request);
 }

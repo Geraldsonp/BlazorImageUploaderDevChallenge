@@ -7,7 +7,7 @@ namespace ImageUploader.Client.Services;
 
 public class ImageService : IImageService
 {
-    private string ApiAddress { get; set; } = "/api/upload";
+    private string ApiAddress { get; set; } = "/api/Images";
     
     private readonly HttpClient _httpClient;
 
@@ -22,7 +22,7 @@ public class ImageService : IImageService
 
         var result = new UploadResult
         {
-            IsSucess = response.IsSuccessStatusCode
+            IsSuccess = response.IsSuccessStatusCode
         };
 
         if (response.IsSuccessStatusCode)
@@ -36,26 +36,5 @@ public class ImageService : IImageService
 
         return result;
     }
-
-    public async Task<UploadResult> UploadAsync(ImageUploadRequest request)
-    {
-
-        var response = await _httpClient.PostAsJsonAsync(ApiAddress, request);
-
-        var result = new UploadResult
-        {
-            IsSucess = response.IsSuccessStatusCode
-        };
-
-        if (response.IsSuccessStatusCode)
-        {
-            result.ImgUrl = await response.Content.ReadFromJsonAsync<string>();
-        }
-        else
-        {
-            result.Error = await response.Content.ReadAsStringAsync();
-        }
-
-        return result;
-    }
+    
 }

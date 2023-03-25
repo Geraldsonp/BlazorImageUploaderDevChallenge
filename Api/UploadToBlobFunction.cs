@@ -20,7 +20,7 @@ namespace ApiIsolated
             _logger = loggerFactory.CreateLogger<HttpTrigger>();
         }
 
-        [Function("Upload")]
+        [Function("Images")]
         public static async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req,
             FunctionContext executionContext)
         {
